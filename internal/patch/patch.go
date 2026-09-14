@@ -6,6 +6,7 @@ package patch
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -55,8 +56,12 @@ func CommitPath(repoDir, path, message string) error {
 	return nil
 }
 
+// errPatchConflict 标记三方合并产生冲突（与普通失败区分：冲突保留现场，失败回滚）。
+var errPatchConflict = errors.New("补丁三方合并产生冲突")
+
 // ApplyFiles 依序对干净仓库执行 git apply（路径已相对仓库根），并整体提交一次。
 // 用于 update 后重建最终技能状态；任一补丁失败即停止返回错误。
+// 冲突时保留冲突标记供用户手动解决（不自动回滚）；其余失败回滚到干净基线。
 func ApplyFiles(repoDir string, patchFiles []string, commitMsg string) error {
 	clean, err := IsClean(repoDir)
 	if err != nil {
@@ -70,6 +75,9 @@ func ApplyFiles(repoDir string, patchFiles []string, commitMsg string) error {
 			return fmt.Errorf("补丁文件 %s 不存在", f)
 		}
 		if err := applyOne(repoDir, f); err != nil {
+			if errors.Is(err, errPatchConflict) {
+				return fmt.Errorf("重放补丁[%d/%d] %s 产生三方合并冲突，冲突标记已保留在工作区，请手动解决后执行 git add + git commit 完成合并", i+1, len(patchFiles), f)
+			}
 			// 失败后回滚到干净基线，便于用户手动重试
 			_, _ = runGit(repoDir, "reset", "--hard", "HEAD")
 			return fmt.Errorf("重放补丁[%d/%d] %s 失败: %v（已回滚到干净基线，请手动处理）", i+1, len(patchFiles), f, err)
@@ -83,16 +91,22 @@ func ApplyFiles(repoDir string, patchFiles []string, commitMsg string) error {
 	return nil
 }
 
-// applyOne 尝试多种策略应用单个补丁，容忍 CRLF/空白差异：先 3way，再 nowarn。
+// applyOne 应用单个补丁。优先 git apply --3way（按 blob 三方合并，对上游偏移
+// 导致普通 apply 定位失败更鲁棒）；3way 产生冲突时保留冲突标记返回 errPatchConflict；
+// 3way 不可用（如补丁缺 index 行）时回退普通 apply，容忍 CRLF/空白差异。
 func applyOne(repoDir, patchFile string) error {
-	if _, err := runGit(repoDir, "apply", "--3way", "--index", patchFile); err == nil {
+	out, err := runGit(repoDir, "apply", "--3way", "--index", patchFile)
+	if err == nil {
 		return nil
+	}
+	if strings.Contains(out, "with conflicts") {
+		return fmt.Errorf("%w: %s", errPatchConflict, strings.TrimSpace(out))
 	}
 	if _, err := runGit(repoDir, "apply", "--index", "--whitespace=nowarn", patchFile); err == nil {
 		return nil
 	}
 	// 最后兜底：仅 --check 看是否可干净应用，把确切错误返回给用户
-	out, err := runGit(repoDir, "apply", "--check", patchFile)
+	out, err = runGit(repoDir, "apply", "--check", patchFile)
 	if err != nil {
 		return fmt.Errorf("%v\n%s", err, out)
 	}

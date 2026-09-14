@@ -10,6 +10,7 @@ import (
 
 	"github.com/liuxin/skillhub/internal/lock"
 	"github.com/liuxin/skillhub/internal/registry"
+	"github.com/liuxin/skillhub/internal/sources"
 	"github.com/spf13/cobra"
 )
 
@@ -78,7 +79,24 @@ func newAddCmd() *cobra.Command {
 					sourceID = deriveSourceID(upstream)
 				}
 				if reg2.FindSource(sourceID) != nil {
-					return fmt.Errorf("来源 %q 已存在", sourceID)
+					// 来源已存在：降级为仅登记技能（同一来源可登记多个技能）
+					if pathInSource == "" {
+						return fmt.Errorf("来源 %q 已存在（未指定 --dir，无可登记内容）", sourceID)
+					}
+					// 校验技能目录确实存在于该来源的克隆目录中
+					skillDir := filepath.Join(sources.CloneDir(reg2.Root, sourceID), pathInSource)
+					if st, err := os.Stat(skillDir); err != nil || !st.IsDir() {
+						return fmt.Errorf("来源 %q 内不存在技能目录 %s", sourceID, pathInSource)
+					}
+					sk, err := reg2.AddSkill(sourceID, pathInSource, skillID)
+					if err != nil {
+						return err
+					}
+					if err := reg2.Save(); err != nil {
+						return err
+					}
+					fmt.Printf("来源 %s 已存在，仅登记技能: %s（默认启用）\n", sourceID, sk.ID)
+					return nil
 				}
 				dir, err := cloneSource(reg2.Root, sourceID, upstream, branch)
 				if err != nil {

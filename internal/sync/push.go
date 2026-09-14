@@ -153,14 +153,14 @@ func copyDirContents(dst, src string) error {
 		srcPath := filepath.Join(src, e.Name())
 		dstPath := filepath.Join(dst, e.Name())
 		if e.IsDir() {
-			if err := os.MkdirAll(dstPath, e.Type().Perm()); err != nil {
+			if err := os.MkdirAll(dstPath, permOf(e)); err != nil {
 				return err
 			}
 			if err := copyDirContents(dstPath, srcPath); err != nil {
 				return err
 			}
 		} else {
-			if err := copyFile(dstPath, srcPath, e.Type().Perm()); err != nil {
+			if err := copyFile(dstPath, srcPath, permOf(e)); err != nil {
 				return err
 			}
 		}
@@ -183,4 +183,13 @@ func copyFile(dst, src string, perm os.FileMode) error {
 		return err
 	}
 	return out.Close()
+}
+
+// permOf 返回目录项的真实权限位。注意不能使用 DirEntry.Type().Perm()：
+// Type() 只含文件类型位（普通文件为 0），会得到 000 权限。
+func permOf(e os.DirEntry) os.FileMode {
+	if info, err := e.Info(); err == nil {
+		return info.Mode().Perm()
+	}
+	return 0o644
 }
