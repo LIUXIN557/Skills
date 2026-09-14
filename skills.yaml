@@ -34,6 +34,9 @@ sources:
     - id: go-modern-guidelines
       url: https://github.com/JetBrains/go-modern-guidelines.git
       updateRef: 155dc7ca10da5e1f6c841503086957b1b37f5815
+    - id: rudder
+      url: https://github.com/rudderlabs/rudder-agent-skills.git
+      updateRef: a01396401d7e9e03ed2ac7737c26f1bb76de5028
 skills:
     - id: brainstorming
       source: superpowers
@@ -270,6 +273,22 @@ skills:
     - id: use-modern-go
       source: go-modern-guidelines
       pathInSource: plugin/skills/use-modern-go
+      enabled: true
+    - id: rudder-design-first-instrumentation
+      source: rudder
+      pathInSource: plugins/rudder-core/skills/rudder-design-first-instrumentation
+      enabled: true
+    - id: rudder-instrumentation-planning
+      source: rudder
+      pathInSource: plugins/rudder-core/skills/rudder-instrumentation-planning
+      enabled: true
+    - id: rudder-tracking-plans
+      source: rudder
+      pathInSource: plugins/rudder-core/skills/rudder-tracking-plans
+      enabled: true
+    - id: rudder-data-catalog
+      source: rudder
+      pathInSource: plugins/rudder-core/skills/rudder-data-catalog
       enabled: true
 patches:
     - skill: grilling
