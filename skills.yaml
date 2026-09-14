@@ -25,6 +25,9 @@ sources:
     - id: mattpocock
       url: https://github.com/mattpocock/skills.git
       updateRef: 3cca18b368ae95cdbdebbff572ccafa662551015
+    - id: acecode
+      url: https://github.com/tmoonlight/acecode.git
+      updateRef: 41973d3c3bd66bd88882700d66721a4386b338eb
 skills:
     - id: brainstorming
       source: superpowers
@@ -229,5 +232,61 @@ skills:
     - id: writing-shape
       source: mattpocock
       pathInSource: skills/in-progress/writing-shape
+      enabled: true
+    - id: acecode-frontend-style
+      source: acecode
+      pathInSource: .agents/skills/acecode-frontend-style
+      enabled: true
+    - id: macos-portable-package
+      source: acecode
+      pathInSource: .agents/skills/macos-portable-package
+      enabled: true
+    - id: openspec-apply-change
+      source: acecode
+      pathInSource: .agents/skills/openspec-apply-change
+      enabled: true
+    - id: openspec-archive-change
+      source: acecode
+      pathInSource: .agents/skills/openspec-archive-change
+      enabled: true
+    - id: openspec-explore
+      source: acecode
+      pathInSource: .agents/skills/openspec-explore
+      enabled: true
+    - id: openspec-propose
+      source: acecode
+      pathInSource: .agents/skills/openspec-propose
+      enabled: true
+    - id: openspec-sync-specs
+      source: acecode
+      pathInSource: .agents/skills/openspec-sync-specs
+      enabled: true
+    - id: source-command-opsx-apply
+      source: acecode
+      pathInSource: .agents/skills/source-command-opsx-apply
+      enabled: true
+    - id: source-command-opsx-archive
+      source: acecode
+      pathInSource: .agents/skills/source-command-opsx-archive
+      enabled: true
+    - id: source-command-opsx-explore
+      source: acecode
+      pathInSource: .agents/skills/source-command-opsx-explore
+      enabled: true
+    - id: source-command-opsx-propose
+      source: acecode
+      pathInSource: .agents/skills/source-command-opsx-propose
+      enabled: true
+    - id: source-command-opsx-sync
+      source: acecode
+      pathInSource: .agents/skills/source-command-opsx-sync
+      enabled: true
+    - id: verify-package
+      source: acecode
+      pathInSource: .agents/skills/verify-package
+      enabled: true
+    - id: grilling-acecode
+      source: acecode
+      pathInSource: .agents/skills/grilling
       enabled: true
 patches: []
