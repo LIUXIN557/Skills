@@ -138,7 +138,7 @@ skills:
     - id: setup-matt-pocock-skills
       source: mattpocock
       pathInSource: skills/engineering/setup-matt-pocock-skills
-      enabled: true
+      enabled: false
     - id: tdd
       source: mattpocock
       pathInSource: skills/engineering/tdd
@@ -154,7 +154,7 @@ skills:
     - id: triage
       source: mattpocock
       pathInSource: skills/engineering/triage
-      enabled: true
+      enabled: false
     - id: wayfinder
       source: mattpocock
       pathInSource: skills/engineering/wayfinder
@@ -170,7 +170,7 @@ skills:
     - id: grill-me
       source: mattpocock
       pathInSource: skills/productivity/grill-me
-      enabled: true
+      enabled: false
     - id: handoff
       source: mattpocock
       pathInSource: skills/productivity/handoff
@@ -178,7 +178,7 @@ skills:
     - id: teach
       source: mattpocock
       pathInSource: skills/productivity/teach
-      enabled: true
+      enabled: false
     - id: to-questionnaire
       source: mattpocock
       pathInSource: skills/productivity/to-questionnaire
@@ -190,7 +190,7 @@ skills:
     - id: writing-for-agents
       source: mattpocock
       pathInSource: skills/productivity/writing-for-agents
-      enabled: true
+      enabled: false
     - id: git-guardrails-claude-code
       source: mattpocock
       pathInSource: skills/misc/git-guardrails-claude-code
@@ -202,7 +202,7 @@ skills:
     - id: scaffold-exercises
       source: mattpocock
       pathInSource: skills/misc/scaffold-exercises
-      enabled: true
+      enabled: false
     - id: setup-pre-commit
       source: mattpocock
       pathInSource: skills/misc/setup-pre-commit
@@ -218,11 +218,11 @@ skills:
     - id: loop-me
       source: mattpocock
       pathInSource: skills/in-progress/loop-me
-      enabled: true
+      enabled: false
     - id: retro
       source: mattpocock
       pathInSource: skills/in-progress/retro
-      enabled: true
+      enabled: false
     - id: setup-ts-deep-modules
       source: mattpocock
       pathInSource: skills/in-progress/setup-ts-deep-modules
@@ -230,15 +230,15 @@ skills:
     - id: writing-beats
       source: mattpocock
       pathInSource: skills/in-progress/writing-beats
-      enabled: true
+      enabled: false
     - id: writing-fragments
       source: mattpocock
       pathInSource: skills/in-progress/writing-fragments
-      enabled: true
+      enabled: false
     - id: writing-shape
       source: mattpocock
       pathInSource: skills/in-progress/writing-shape
-      enabled: true
+      enabled: false
     - id: eli5
       source: eli5
       pathInSource: skills/eli5
