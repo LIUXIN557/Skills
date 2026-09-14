@@ -43,6 +43,9 @@ sources:
     - id: humanizer
       url: https://github.com/blader/humanizer.git
       updateRef: 9862685f575c65a8247f90369951df1b3416e3d6
+    - id: open-code-review
+      url: https://github.com/alibaba/open-code-review.git
+      updateRef: 6e5cd8cf2578768b6c6d1fafa1d14f66801d5f2b
 skills:
     - id: brainstorming
       source: superpowers
@@ -303,6 +306,14 @@ skills:
     - id: humanizer
       source: humanizer
       pathInSource: .
+      enabled: true
+    - id: open-code-review
+      source: open-code-review
+      pathInSource: skills/open-code-review
+      enabled: true
+    - id: open-code-review-delegate
+      source: open-code-review
+      pathInSource: skills/open-code-review-delegate
       enabled: true
 patches:
     - skill: grilling
