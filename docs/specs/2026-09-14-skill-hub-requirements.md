@@ -95,3 +95,35 @@
 5. **补丁的生成与重放流程**：补丁是手动生成 diff 还是工具对比基线生成；重放顺序、冲突检测与回退策略；补丁与应用的上游版本如何对应绑定。
 6. **Web 与 CLI 的关系**：本地 Web 服务的端口与启动方式；Web 是否直接触发文件操作/同步；清单写入的并发与锁。
 7. **下游产品差异**：不同产品 skills 目录是否有格式差异（如是否支持嵌套、技能描述文件命名），是否需要针对某产品做适配规则。
+
+---
+
+## 九、技术方案（grilling 已敲定，2026-09-14）
+
+> 需求文档的「待定技术决策」由上表逐条裁决，结果如下，与需求共同构成完整设计。
+
+### 决策结果
+1. **清单格式**：YAML，四分区（targets / sources / skills / patches）。
+2. **技能唯一标识**：技能文件夹名；同名冲突时报错，交由用户手动处理。
+3. **来源引入方式**：嵌套 git clone 到 `sources/<来源>/`，保留上游 .git 历史；更新 = git pull。
+4. **清单字段**：
+   - targets（各产品技能目录，支持可选 `subPath`，默认落到 skills 根）
+   - sources（git 地址/本地路径、默认分支）
+   - skills（id=文件夹名、source、path_in_source、enabled、补丁引用）
+   - patches（skill、basestamp=产生时上游 commit、说明）
+5. **补丁机制**：在来源嵌套仓库内修改文件（工作区本地改动）→ `patch` 命令用 `git diff 相对基线` 导出到 `patches/<skill>/NNN-描述.diff`，记录 basestamp；`update` 先 fetch 上游、对干净工作区依序 `git apply` 重放，全成功才算完成，失败即停交人工合并并刷新 basestamp。
+6. **推送同步**：以 registry 为唯一事实源，先覆盖启用技能（展平到目标），再删除「已登记但禁用」的目标副本；提供 `--dry-run/--verbose` 预览；不碰未登记内容；target 可选 subPath 适配特殊产品。
+7. **Web 与 CLI**：单 Go 二进制，`serve` 手动启动本地网页（非守护进程）；CLI 命令复用同一引擎；清单写操作加文件锁。
+
+### 磁盘布局
+```
+c:\dev\skills\                    # 中控仓库（git 管理）
+├── skills.yaml                   # 清单：targets/sources/skills/patches
+├── sources/<来源>/               # 每来源一个嵌套 git clone（保留 .git）
+│     └── ...上游目录树...
+└── patches/<skill>/NNN-描述.diff
+```
+
+### 推断面（待实施时确认）
+- **CLI 命令面**：`list / add / rm / enable / disable / push(含 --dry-run) / update / patch / patch-apply / serve`
+- **网页功能面**：技能列表 + 启用/禁用开关 + 触发推送 + 查看来源/补丁信息（增删/更新走 CLI）
