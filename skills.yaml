@@ -37,6 +37,12 @@ sources:
     - id: rudder
       url: https://github.com/rudderlabs/rudder-agent-skills.git
       updateRef: a01396401d7e9e03ed2ac7737c26f1bb76de5028
+    - id: humanizer-zh
+      url: https://github.com/op7418/Humanizer-zh.git
+      updateRef: 91f3d394db8419c20d67ebe22a96cf8fee0a404b
+    - id: humanizer
+      url: https://github.com/blader/humanizer.git
+      updateRef: 9862685f575c65a8247f90369951df1b3416e3d6
 skills:
     - id: brainstorming
       source: superpowers
@@ -289,6 +295,14 @@ skills:
     - id: rudder-data-catalog
       source: rudder
       pathInSource: plugins/rudder-core/skills/rudder-data-catalog
+      enabled: true
+    - id: humanizer-zh
+      source: humanizer-zh
+      pathInSource: .
+      enabled: true
+    - id: humanizer
+      source: humanizer
+      pathInSource: .
       enabled: true
 patches:
     - skill: grilling
