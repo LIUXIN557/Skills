@@ -25,6 +25,15 @@ sources:
     - id: mattpocock
       url: https://github.com/mattpocock/skills.git
       updateRef: 3cca18b368ae95cdbdebbff572ccafa662551015
+    - id: ponytail
+      url: https://github.com/DietrichGebert/ponytail.git
+      updateRef: e3ba2aa6f1e6f0bc4d69eb09c9f0d0a93af56156
+    - id: eli5
+      url: https://github.com/dreambigou/eli5.git
+      updateRef: a766623b062331fdde53467001379b4ddf3acc2f
+    - id: go-modern-guidelines
+      url: https://github.com/JetBrains/go-modern-guidelines.git
+      updateRef: 155dc7ca10da5e1f6c841503086957b1b37f5815
 skills:
     - id: brainstorming
       source: superpowers
@@ -229,6 +238,38 @@ skills:
     - id: writing-shape
       source: mattpocock
       pathInSource: skills/in-progress/writing-shape
+      enabled: true
+    - id: eli5
+      source: eli5
+      pathInSource: skills/eli5
+      enabled: true
+    - id: ponytail
+      source: ponytail
+      pathInSource: skills/ponytail
+      enabled: true
+    - id: ponytail-audit
+      source: ponytail
+      pathInSource: skills/ponytail-audit
+      enabled: true
+    - id: ponytail-debt
+      source: ponytail
+      pathInSource: skills/ponytail-debt
+      enabled: true
+    - id: ponytail-gain
+      source: ponytail
+      pathInSource: skills/ponytail-gain
+      enabled: true
+    - id: ponytail-help
+      source: ponytail
+      pathInSource: skills/ponytail-help
+      enabled: true
+    - id: ponytail-review
+      source: ponytail
+      pathInSource: skills/ponytail-review
+      enabled: true
+    - id: use-modern-go
+      source: go-modern-guidelines
+      pathInSource: plugin/skills/use-modern-go
       enabled: true
 patches:
     - skill: grilling
