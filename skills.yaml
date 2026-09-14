@@ -158,7 +158,7 @@ skills:
     - id: wayfinder
       source: mattpocock
       pathInSource: skills/engineering/wayfinder
-      enabled: true
+      enabled: false
     - id: wizard
       source: mattpocock
       pathInSource: skills/engineering/wizard
@@ -182,11 +182,11 @@ skills:
     - id: to-questionnaire
       source: mattpocock
       pathInSource: skills/productivity/to-questionnaire
-      enabled: true
+      enabled: false
     - id: wait-what
       source: mattpocock
       pathInSource: skills/productivity/wait-what
-      enabled: true
+      enabled: false
     - id: writing-for-agents
       source: mattpocock
       pathInSource: skills/productivity/writing-for-agents
@@ -194,11 +194,11 @@ skills:
     - id: git-guardrails-claude-code
       source: mattpocock
       pathInSource: skills/misc/git-guardrails-claude-code
-      enabled: true
+      enabled: false
     - id: migrate-to-shoehorn
       source: mattpocock
       pathInSource: skills/misc/migrate-to-shoehorn
-      enabled: true
+      enabled: false
     - id: scaffold-exercises
       source: mattpocock
       pathInSource: skills/misc/scaffold-exercises
@@ -206,11 +206,11 @@ skills:
     - id: setup-pre-commit
       source: mattpocock
       pathInSource: skills/misc/setup-pre-commit
-      enabled: true
+      enabled: false
     - id: claude-handoff
       source: mattpocock
       pathInSource: skills/in-progress/claude-handoff
-      enabled: true
+      enabled: false
     - id: implement-spec
       source: mattpocock
       pathInSource: skills/in-progress/implement-spec
@@ -226,7 +226,7 @@ skills:
     - id: setup-ts-deep-modules
       source: mattpocock
       pathInSource: skills/in-progress/setup-ts-deep-modules
-      enabled: true
+      enabled: false
     - id: writing-beats
       source: mattpocock
       pathInSource: skills/in-progress/writing-beats
