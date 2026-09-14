@@ -1,0 +1,11 @@
+# 构建产物
+/skill.exe
+/skill
+
+# 运行时清单锁
+skills.yaml.lock
+
+# sources 为嵌套 git 克隆，不需要纳入本仓（保留各自 .git）
+/sources/
+
+# 本地补丁文件也应保留提交以固化记录，此处不忽略

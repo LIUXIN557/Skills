@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skill Hub · 技能中控</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; margin: 0; background: var(--bg); color: var(--fg); }
+  :root { --bg:#f5f6f8; --fg:#1a1d21; --card:#fff; --border:#e2e5ea; --accent:#2f6fed; --danger:#d92d20; --muted:#6b7280; }
+  @media (prefers-color-scheme: dark){ :root{ --bg:#15171a; --fg:#e8eaed; --card:#1f2226; --border:#33373d; --accent:#5b8def; --danger:#f77167; --muted:#9aa0a8; } }
+  header { padding: 20px 28px; border-bottom:1px solid var(--border); background:var(--card); display:flex; align-items:center; gap:16px; }
+  header h1 { font-size:18px; margin:0; }
+  header .sub { color:var(--muted); font-size:12px; }
+  main { max-width: 980px; margin: 24px auto; padding: 0 20px; }
+  .toolbar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+  button { font:inherit; cursor:pointer; border:1px solid var(--border); background:var(--card); color:var(--fg); border-radius:8px; padding:8px 14px; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button.danger { background:transparent; border-color:var(--danger); color:var(--danger); }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:8px; }
+  .card .row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .card .name { font-weight:600; }
+  .card .meta { color:var(--muted); font-size:12px; word-break:break-all; }
+  .switch { position:relative; width:44px; height:24px; }
+  .switch input { opacity:0; width:0; height:0; }
+  .slider { position:absolute; inset:0; background:var(--border); border-radius:24px; transition:.2s; }
+  .slider:before { content:""; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
+  input:checked + .slider { background:var(--accent); }
+  input:checked + .slider:before { transform:translateX(20px); }
+  .summary { margin-bottom:16px; color:var(--muted); font-size:13px; }
+  .notice { margin-top:16px; padding:10px 14px; border-radius:10px; font-size:13px; display:none; }
+  .notice.ok { display:block; background:rgba(47,111,237,.1); color:var(--accent); }
+  .notice.err { display:block; background:rgba(217,45,32,.1); color:var(--danger); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Skill Hub</h1>
+  <div class="sub">个人技能中控仓库 · 启用/禁用技能并推送到各产品</div>
+</header>
+<main>
+  <div class="toolbar">
+    <button class="primary" id="pushBtn">同步到各产品 (push)</button>
+    <button id="dryRunBtn">预览 (push --dry-run)</button>
+    <button id="refreshBtn">刷新</button>
+  </div>
+  <div class="notice" id="notice"></div>
+  <div class="summary" id="summary"></div>
+  <div class="cards" id="cards"></div>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+function esc(s){ return (s+"").replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function show(msg, ok){ const n=$('notice'); n.textContent=msg; n.className='notice '+(ok?'ok':'err'); }
+
+async function api(url, method){
+  const r = await fetch(url, {method: method||'GET'});
+  if(!r.ok){ let txt="", d=await r.json().catch(()=>{}); if(d) txt=d.error||""; throw new Error((r.status)+' '+txt); }
+  return r.json();
+}
+
+async function load(){
+  try{
+    const st = await api('/api/state','GET');
+    $('summary').textContent = `目标产品 ${st.targets.length} 个 · 来源 ${st.sources.length} 个 · 技能 ${st.skills.length} 个`;
+    const cards = $('cards'); cards.innerHTML='';
+    if(!st.skills.length){ cards.innerHTML='<div class="meta">暂无已登记技能。可用 CLI: skill add &lt;url&gt; --dir &lt;path&gt;</div>'; return; }
+    for(const sk of st.skills){
+      const d = document.createElement('div'); d.className='card';
+      const on = sk.enabled;
+      d.innerHTML = `
+        <div class="row"><span class="name">${esc(sk.id)}</span>
+          <label class="switch"><input type="checkbox" ${on?'checked':''} data-id="${esc(sk.id)}"><span class="slider"></span></label>
+        </div>
+        <div class="meta">来源: ${esc(sk.source)} · 路径: ${esc(sk.pathInSource)}</div>
+        <div class="meta">补丁: ${(st.patches[sk.id]||0)} 个</div>`;
+      d.querySelector('input').addEventListener('change', async (e)=>{
+        const val = e.target.checked;
+        try{ await api(`/api/skills/${encodeURIComponent(sk.id)}/${val?'enable':'disable'}`, 'POST'); show(`已${val?'启用':'禁用'} ${sk.id}。`,`${val}`); }
+        catch(err){ show('操作失败: '+err.message,false); e.target.checked=!val; }
+      });
+      cards.appendChild(d);
+    }
+  }catch(err){ show('加载失败: '+err.message,false); }
+}
+
+async function push(dry){
+  try{ const r=await api('/api/push'+(dry?'?dryRun=1':''),'POST'); show((dry?'预览完成':'同步完成')+'（remote 日志见服务端控制台）',true); }
+  catch(err){ show('推送失败: '+err.message,false); }
+}
+
+$('pushBtn').onclick = ()=>push(false);
+$('dryRunBtn').onclick = ()=>push(true);
+$('refreshBtn').onclick = load;
+load();
+</script>
+</body>
+</html>
