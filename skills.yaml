@@ -1,0 +1,233 @@
+config: {}
+targets:
+    - name: acecode
+      path: C:\Users\Administrator\.acecode\skills
+    - name: agents
+      path: C:\Users\Administrator\.agents\skills
+    - name: codex
+      path: C:\Users\Administrator\.codex\skills
+    - name: grok
+      path: C:\Users\Administrator\.grok\skills
+    - name: pi
+      path: C:\Users\Administrator\.pi\agent\skills
+    - name: qoder
+      path: C:\Users\Administrator\.qoder\skills
+    - name: trae
+      path: C:\Users\Administrator\.trae\skills
+    - name: trae-cn
+      path: C:\Users\Administrator\.trae-cn\skills
+    - name: doubao
+      path: C:\Users\Administrator\DoubaoWork\skills
+sources:
+    - id: superpowers
+      url: https://github.com/obra/superpowers.git
+      updateRef: b36e0829c6d0140e93cfef2ca599b1b07d4a7797
+    - id: mattpocock
+      url: https://github.com/mattpocock/skills.git
+      updateRef: 3cca18b368ae95cdbdebbff572ccafa662551015
+skills:
+    - id: brainstorming
+      source: superpowers
+      pathInSource: skills/brainstorming
+      enabled: true
+    - id: dispatching-parallel-agents
+      source: superpowers
+      pathInSource: skills/dispatching-parallel-agents
+      enabled: true
+    - id: executing-plans
+      source: superpowers
+      pathInSource: skills/executing-plans
+      enabled: true
+    - id: finishing-a-development-branch
+      source: superpowers
+      pathInSource: skills/finishing-a-development-branch
+      enabled: true
+    - id: receiving-code-review
+      source: superpowers
+      pathInSource: skills/receiving-code-review
+      enabled: true
+    - id: requesting-code-review
+      source: superpowers
+      pathInSource: skills/requesting-code-review
+      enabled: true
+    - id: subagent-driven-development
+      source: superpowers
+      pathInSource: skills/subagent-driven-development
+      enabled: true
+    - id: systematic-debugging
+      source: superpowers
+      pathInSource: skills/systematic-debugging
+      enabled: true
+    - id: test-driven-development
+      source: superpowers
+      pathInSource: skills/test-driven-development
+      enabled: true
+    - id: using-git-worktrees
+      source: superpowers
+      pathInSource: skills/using-git-worktrees
+      enabled: true
+    - id: using-superpowers
+      source: superpowers
+      pathInSource: skills/using-superpowers
+      enabled: true
+    - id: verification-before-completion
+      source: superpowers
+      pathInSource: skills/verification-before-completion
+      enabled: true
+    - id: writing-plans
+      source: superpowers
+      pathInSource: skills/writing-plans
+      enabled: true
+    - id: writing-skills
+      source: superpowers
+      pathInSource: skills/writing-skills
+      enabled: true
+    - id: ask-matt
+      source: mattpocock
+      pathInSource: skills/engineering/ask-matt
+      enabled: true
+    - id: codebase-design
+      source: mattpocock
+      pathInSource: skills/engineering/codebase-design
+      enabled: true
+    - id: code-review
+      source: mattpocock
+      pathInSource: skills/engineering/code-review
+      enabled: true
+    - id: diagnosing-bugs
+      source: mattpocock
+      pathInSource: skills/engineering/diagnosing-bugs
+      enabled: true
+    - id: domain-modeling
+      source: mattpocock
+      pathInSource: skills/engineering/domain-modeling
+      enabled: true
+    - id: grill-with-docs
+      source: mattpocock
+      pathInSource: skills/engineering/grill-with-docs
+      enabled: true
+    - id: implement
+      source: mattpocock
+      pathInSource: skills/engineering/implement
+      enabled: true
+    - id: improve-codebase-architecture
+      source: mattpocock
+      pathInSource: skills/engineering/improve-codebase-architecture
+      enabled: true
+    - id: prototype
+      source: mattpocock
+      pathInSource: skills/engineering/prototype
+      enabled: true
+    - id: research
+      source: mattpocock
+      pathInSource: skills/engineering/research
+      enabled: true
+    - id: resolving-merge-conflicts
+      source: mattpocock
+      pathInSource: skills/engineering/resolving-merge-conflicts
+      enabled: true
+    - id: setup-matt-pocock-skills
+      source: mattpocock
+      pathInSource: skills/engineering/setup-matt-pocock-skills
+      enabled: true
+    - id: tdd
+      source: mattpocock
+      pathInSource: skills/engineering/tdd
+      enabled: true
+    - id: to-spec
+      source: mattpocock
+      pathInSource: skills/engineering/to-spec
+      enabled: true
+    - id: to-tickets
+      source: mattpocock
+      pathInSource: skills/engineering/to-tickets
+      enabled: true
+    - id: triage
+      source: mattpocock
+      pathInSource: skills/engineering/triage
+      enabled: true
+    - id: wayfinder
+      source: mattpocock
+      pathInSource: skills/engineering/wayfinder
+      enabled: true
+    - id: wizard
+      source: mattpocock
+      pathInSource: skills/engineering/wizard
+      enabled: true
+    - id: grilling
+      source: mattpocock
+      pathInSource: skills/productivity/grilling
+      enabled: true
+    - id: grill-me
+      source: mattpocock
+      pathInSource: skills/productivity/grill-me
+      enabled: true
+    - id: handoff
+      source: mattpocock
+      pathInSource: skills/productivity/handoff
+      enabled: true
+    - id: teach
+      source: mattpocock
+      pathInSource: skills/productivity/teach
+      enabled: true
+    - id: to-questionnaire
+      source: mattpocock
+      pathInSource: skills/productivity/to-questionnaire
+      enabled: true
+    - id: wait-what
+      source: mattpocock
+      pathInSource: skills/productivity/wait-what
+      enabled: true
+    - id: writing-for-agents
+      source: mattpocock
+      pathInSource: skills/productivity/writing-for-agents
+      enabled: true
+    - id: git-guardrails-claude-code
+      source: mattpocock
+      pathInSource: skills/misc/git-guardrails-claude-code
+      enabled: true
+    - id: migrate-to-shoehorn
+      source: mattpocock
+      pathInSource: skills/misc/migrate-to-shoehorn
+      enabled: true
+    - id: scaffold-exercises
+      source: mattpocock
+      pathInSource: skills/misc/scaffold-exercises
+      enabled: true
+    - id: setup-pre-commit
+      source: mattpocock
+      pathInSource: skills/misc/setup-pre-commit
+      enabled: true
+    - id: claude-handoff
+      source: mattpocock
+      pathInSource: skills/in-progress/claude-handoff
+      enabled: true
+    - id: implement-spec
+      source: mattpocock
+      pathInSource: skills/in-progress/implement-spec
+      enabled: true
+    - id: loop-me
+      source: mattpocock
+      pathInSource: skills/in-progress/loop-me
+      enabled: true
+    - id: retro
+      source: mattpocock
+      pathInSource: skills/in-progress/retro
+      enabled: true
+    - id: setup-ts-deep-modules
+      source: mattpocock
+      pathInSource: skills/in-progress/setup-ts-deep-modules
+      enabled: true
+    - id: writing-beats
+      source: mattpocock
+      pathInSource: skills/in-progress/writing-beats
+      enabled: true
+    - id: writing-fragments
+      source: mattpocock
+      pathInSource: skills/in-progress/writing-fragments
+      enabled: true
+    - id: writing-shape
+      source: mattpocock
+      pathInSource: skills/in-progress/writing-shape
+      enabled: true
+patches: []
