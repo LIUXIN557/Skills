@@ -29,6 +29,7 @@ func Execute() {
 		newPatchCmd(),
 		newPatchApplyCmd(),
 		newUpdateCmd(),
+		newRestoreCmd(),
 		newPushCmd(),
 		newServeCmd(),
 	)

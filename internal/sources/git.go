@@ -33,6 +33,49 @@ func Clone(root, sourceID, upstream, branch string) (string, error) {
 	return dir, nil
 }
 
+// CloneBundle 从 bundle 文件恢复来源 git 仓库（克隆后源码即全量 + 可 update/patch-apply）。
+func CloneBundle(bundle, dir string) error {
+	if _, err := os.Stat(filepath.Join(dir, ".git")); err == nil {
+		return fmt.Errorf("来源已存在 git 仓库: %s", dir)
+	}
+	if out, err := runGit("", "clone", "--", bundle, dir); err != nil {
+		return fmt.Errorf("git clone bundle %s 失败: %v\n%s", bundle, err, out)
+	}
+	return nil
+}
+
+// SetOrigin 修正来源仓库的 origin remote（bundle clone 后 origin 默认指向 bundle 文件）。
+// 同时补回 remote HEAD 符号引用：git remote remove 会一并删掉 refs/remotes/origin/HEAD，
+// 而 FetchLatest/update 依赖 rev-parse origin 解析默认分支。
+func SetOrigin(dir, url string) error {
+	_, _ = runGit(dir, "remote", "remove", "origin") // 无 origin 时忽略错误
+	if out, err := runGit(dir, "remote", "add", "origin", url); err != nil {
+		return fmt.Errorf("设置 origin 失败: %v\n%s", err, out)
+	}
+	if out, err := runGit(dir, "remote", "set-head", "origin", "-a"); err != nil {
+		// 自动检测失败（如离线环境）时退化为 main 分支
+		if _, err2 := runGit(dir, "symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/main"); err2 != nil {
+			return fmt.Errorf("设置 origin/HEAD 失败: %v\n%s", err, out)
+		}
+	}
+	return nil
+}
+
+// EnsureGitIdentity 为来源仓库配置 git 提交身份（缺失时写入默认值，供补丁重放提交使用）。
+func EnsureGitIdentity(dir string) error {
+	if out, err := runGit(dir, "config", "user.name"); err == nil && strings.TrimSpace(out) != "" {
+		return nil
+	}
+	// 与注册环境保持一致的身份兜底
+	if out, err := runGit(dir, "config", "user.name", "skillhub"); err != nil {
+		return fmt.Errorf("配置 user.name 失败: %v\n%s", err, out)
+	}
+	if out, err := runGit(dir, "config", "user.email", "skillhub@local"); err != nil {
+		return fmt.Errorf("配置 user.email 失败: %v\n%s", err, out)
+	}
+	return nil
+}
+
 // FetchLatest 拉取上游最新到本地引用，不动工作区，返回 origin 目标的 resolved ref（fetch 后的 commit）。
 func FetchLatest(dir string) (string, error) {
 	// 先确保 origin 存在

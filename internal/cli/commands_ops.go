@@ -36,6 +36,9 @@ func newPatchCmd() *cobra.Command {
 					return err
 				}
 				repo := mustSourceRepo(reg2.Root, src.ID)
+				if err := requireSourceGitRepo(reg2.Root, src.ID); err != nil {
+					return err
+				}
 				base, err := patch.Head(repo)
 				if err != nil {
 					return err
@@ -94,6 +97,9 @@ func newPatchApplyCmd() *cobra.Command {
 					return err
 				}
 				repo := mustSourceRepo(reg2.Root, src.ID)
+				if err := requireSourceGitRepo(reg2.Root, src.ID); err != nil {
+					return err
+				}
 				clean, err := patch.IsClean(repo)
 				if err != nil {
 					return err
@@ -142,6 +148,9 @@ func newUpdateCmd() *cobra.Command {
 					return fmt.Errorf("来源 %q 不存在", args[0])
 				}
 				repo := mustSourceRepo(reg2.Root, src.ID)
+				if err := requireSourceGitRepo(reg2.Root, src.ID); err != nil {
+					return err
+				}
 				clean, err := patch.IsClean(repo)
 				if err != nil {
 					return err

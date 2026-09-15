@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -76,4 +77,15 @@ func collectSourcePatchFiles(reg *registry.File, sourceID string) []string {
 
 func mustSourceRepo(root, sourceID string) string {
 	return sources.CloneDir(root, sourceID)
+}
+
+// requireSourceGitRepo 校验来源目录是 git 仓库。
+// 克隆主仓库后 sources/ 是普通源码副本（无 .git），此时 patch/update 类命令
+// 若直接跑 git 会向上找到父仓库并误操作，必须提示先 restore。
+func requireSourceGitRepo(root, sourceID string) error {
+	dir := sources.CloneDir(root, sourceID)
+	if st, err := os.Stat(filepath.Join(dir, ".git")); err != nil || !st.IsDir() {
+		return fmt.Errorf("来源 %s 缺少 git 仓库（克隆后为普通源码副本），请先运行 skill restore %s", sourceID, sourceID)
+	}
+	return nil
 }
