@@ -1,0 +1,21 @@
+# Web App Tracking Plan
+#
+# Tracking plan for the main e-commerce website.
+# Uses all e-commerce events with page attribution properties.
+# Governance is permissive (forward violations) for development flexibility.
+
+version: "rudder/v1"
+kind: "tracking-plan"
+metadata:
+  name: "tracking-plans"
+spec:
+  name: "Web App Tracking Plan"
+  description: "E-commerce events for the main website with page attribution"
+  governance:
+    unplannedEvents: forward    # Forward unplanned events with flag
+    violatingEvents: forward    # Forward violations with metadata
+  events:
+    - event: "urn:rudder:event/product-viewed"
+      # No overrides - use event defaults
+    - event: "urn:rudder:event/product-added-to-cart"
+    - event: "urn:rudder:event/order-completed"

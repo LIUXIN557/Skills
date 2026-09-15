@@ -1,0 +1,33 @@
+{
+  "name": "doubao-skills",
+  "version": "0.1.0",
+  "description": "doubao-product-qa: AI agent QA test lead skill — turns PRD/code/test records into auditable QA baseline, risk cases, execution evidence, bugs and release decision (bootstrap → anchor → complete → qa_deliver).",
+  "keywords": ["skill", "qa", "testing", "agent", "ai-agent", "doubao", "claude-code", "cursor", "test-plan", "release-gate"],
+  "license": "MIT",
+  "type": "commonjs",
+  "bin": {
+    "qa-flow": "bin/qa-flow",
+    "qa-deliver": "bin/qa-deliver"
+  },
+  "files": [
+    "SKILL.md",
+    "README.md",
+    "references",
+    "scripts",
+    "assets",
+    "agents",
+    "tests",
+    "bin"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "os": ["darwin", "linux", "win32"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LIUXIN557/doubao-skills.git"
+  },
+  "scripts": {
+    "smoke": "bash bin/qa-flow --help"
+  }
+}

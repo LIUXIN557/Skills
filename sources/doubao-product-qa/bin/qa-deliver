@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# qa-deliver — doubao-product-qa 唯一交付口
+set -euo pipefail
+DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+export PYTHONPATH="$DIR/scripts${PYTHONPATH:+:$PYTHONPATH}"
+exec python3 "$DIR/scripts/qa_deliver.py" "$@"

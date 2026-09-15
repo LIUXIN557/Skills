@@ -1,0 +1,154 @@
+# Customer Properties
+#
+# Properties related to customers and orders.
+# Referenced by Order Completed event and AddressType.
+
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "customer_email"
+  type: "string"
+  description: "Customer email address"
+  config:
+    pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "order_id"
+  type: "string"
+  description: "Unique order identifier"
+  config:
+    minLength: 3
+    maxLength: 50
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "order_total"
+  type: "number"
+  description: "Total order value"
+  config:
+    minimum: 0
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "currency"
+  type: "string"
+  description: "ISO 4217 currency code"
+  config:
+    pattern: "^[A-Z]{3}$"
+
+---
+# Address component properties (used by AddressType)
+
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "address"
+  type: "string"
+  description: "Street address"
+  config:
+    maxLength: 200
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "city"
+  type: "string"
+  description: "City name"
+  config:
+    maxLength: 100
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "state"
+  type: "string"
+  description: "State or province"
+  config:
+    maxLength: 100
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "zipcode"
+  type: "string"
+  description: "Postal/ZIP code"
+  config:
+    maxLength: 20
+
+---
+# Attribution properties
+
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "page_url"
+  type: "string"
+  description: "URL of the current page"
+  config:
+    format: "uri"
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "referrer_url"
+  type: "string"
+  description: "URL of the referring page"
+  config:
+    format: "uri"
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "session_id"
+  type: "string"
+  description: "Session identifier for grouping events"
+  config:
+    minLength: 10
+    maxLength: 100
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "device_id"
+  type: "string"
+  description: "Device identifier for mobile attribution"
+  config:
+    minLength: 10
+    maxLength: 100

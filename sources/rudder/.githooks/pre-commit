@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+# pre-commit — fast local checks before a commit is created.
+#
+# Enable once per clone:
+#   git config core.hooksPath .githooks
+#
+# Bypass once (emergencies only):
+#   git commit --no-verify
+#
+# Checks (all fast — should stay well under 1s):
+#   1. Plugin manifest JSON files parse as valid JSON.
+#   2. Skills review (same script as pre-push, but without --strict so
+#      warnings don't block local iteration; pre-push and CI still gate them).
+#   3. No leftover merge conflict markers in staged content.
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+SCRIPT="${SKILLS_REVIEW_SCRIPT:-${REPO_ROOT}/scripts/review-skills.py}"
+
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "pre-commit: python3 not on PATH — skipping checks." >&2
+    exit 0
+fi
+
+# 1. Validate plugin manifests parse as JSON. Mirrors CI workflow.
+#    All manifests checked in one python invocation to keep the hook snappy.
+manifests=()
+while IFS= read -r -d '' manifest; do
+    manifests+=("$manifest")
+done < <(find "$REPO_ROOT" -path "*/.claude-plugin/*.json" -not -path "*/.git/*" -print0)
+
+if (( ${#manifests[@]} > 0 )); then
+    if ! python3 - "${manifests[@]}" <<'PY'
+import json, sys
+bad = []
+for path in sys.argv[1:]:
+    try:
+        with open(path) as f:
+            json.load(f)
+    except Exception as e:
+        bad.append(f"{path}: {e}")
+if bad:
+    for line in bad:
+        print(f"pre-commit: invalid JSON in {line}", file=sys.stderr)
+    sys.exit(1)
+PY
+    then
+        exit 1
+    fi
+fi
+
+# 2. Skills review. No --strict here: warnings shouldn't block a WIP commit.
+#    pre-push runs with the same defaults; CI is the strict gate.
+if [[ -f "$SCRIPT" ]]; then
+    if ! python3 "$SCRIPT" "$REPO_ROOT" --quiet; then
+        cat >&2 <<'EOF'
+
+pre-commit: skills review failed.
+  - fix the errors above, or
+  - bypass once with  git commit --no-verify  (use sparingly).
+
+EOF
+        exit 1
+    fi
+fi
+
+# 3. Keep the per-tool marketplace shims derived from the canonical manifest.
+#    Canonical: marketplace.json (Open Plugins standard, repo root; sources start with "./").
+#    Derived (edit the canonical file only — this regenerates and stages both):
+#      .claude-plugin/marketplace.json — exact copy. Claude Code reads only this path and
+#        requires sources to start with "./".
+#      .cursor-plugin/marketplace.json — sources stripped of leading "./". cursor.directory
+#        reads only this path and its parser strips slashes but NOT "./", so "./plugins/x"
+#        must become "plugins/x" or discovery finds nothing.
+CANON="${REPO_ROOT}/marketplace.json"
+if [[ -f "$CANON" ]]; then
+    claude_shim="${REPO_ROOT}/.claude-plugin/marketplace.json"
+    if ! cmp -s "$CANON" "$claude_shim" 2>/dev/null; then
+        mkdir -p "$(dirname "$claude_shim")"
+        cp "$CANON" "$claude_shim"
+        git add "$claude_shim"
+        echo "pre-commit: regenerated .claude-plugin/marketplace.json (staged)." >&2
+    fi
+
+    cursor_shim="${REPO_ROOT}/.cursor-plugin/marketplace.json"
+    cursor_tmp="$(mktemp)"
+    sed 's#"source": "\./#"source": "#g' "$CANON" > "$cursor_tmp"
+    if ! cmp -s "$cursor_tmp" "$cursor_shim" 2>/dev/null; then
+        mkdir -p "$(dirname "$cursor_shim")"
+        cp "$cursor_tmp" "$cursor_shim"
+        git add "$cursor_shim"
+        echo "pre-commit: regenerated .cursor-plugin/marketplace.json (staged)." >&2
+    fi
+    rm -f "$cursor_tmp"
+fi
+
+# 4. Merge conflict markers in staged content.
+if git diff --cached --check >/dev/null 2>&1; then
+    :
+else
+    # --check also flags whitespace errors; re-grep for conflict markers
+    # specifically so we only fail on real conflicts.
+    if git diff --cached -U0 | grep -E '^\+(<{7}|={7}|>{7})( |$)' >/dev/null; then
+        echo "pre-commit: merge conflict markers in staged changes." >&2
+        exit 1
+    fi
+fi

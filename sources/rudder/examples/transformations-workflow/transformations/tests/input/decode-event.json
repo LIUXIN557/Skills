@@ -1,0 +1,10 @@
+{
+  "type": "track",
+  "event": "Test Decode",
+  "properties": {
+    "testString": "Test decode",
+    "encodedData": "SGVsbG8sIFdvcmxkIQ=="
+  },
+  "context": {},
+  "anonymousId": "test-user-456"
+}

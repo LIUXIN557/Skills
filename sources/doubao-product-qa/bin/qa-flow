@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# qa-flow — doubao-product-qa 阶段控制器（bootstrap/anchor/complete/publish）
+set -euo pipefail
+DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+export PYTHONPATH="$DIR/scripts${PYTHONPATH:+:$PYTHONPATH}"
+exec python3 "$DIR/scripts/qa_flow.py" "$@"

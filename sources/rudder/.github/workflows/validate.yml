@@ -1,0 +1,79 @@
+name: Validate Skills
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Review Skills
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - name: Run skills review
+        run: python3 scripts/review-skills.py . --strict
+
+      - name: Validate plugin manifests
+        run: |
+          # Check that all JSON files are valid
+          for f in $(find . -name "*.json" -path "*/.claude-plugin/*"); do
+            echo "Validating $f"
+            python3 -c "import json; json.load(open('$f'))" || exit 1
+          done
+
+      - name: Marketplace shims in sync
+        run: |
+          # Per-tool shims derived from the canonical root marketplace.json. Claude Code
+          # reads .claude-plugin/ (exact copy); cursor.directory reads .cursor-plugin/
+          # (sources stripped of leading "./"). The pre-commit hook regenerates both.
+          cmp -s marketplace.json .claude-plugin/marketplace.json \
+            || { echo "::error::.claude-plugin/marketplace.json is stale — run: cp marketplace.json .claude-plugin/marketplace.json"; exit 1; }
+          cmp -s <(sed 's#"source": "\./#"source": "#g' marketplace.json) .cursor-plugin/marketplace.json \
+            || { echo "::error::.cursor-plugin/marketplace.json is stale — regenerate via .githooks/pre-commit"; exit 1; }
+
+      - name: Set up Node.js (cursor.directory preview)
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "24"
+
+      - name: cursor.directory discovery preview
+        run: |
+          # Runs cursor.directory's REAL parser (vendored scripts/cursor-preview/, pinned to
+          # an upstream commit) against the working tree, so a broken layout fails CI instead
+          # of a live submission on main.
+          node --experimental-transform-types scripts/cursor-preview/preview.mts .
+
+      - name: skills.sh discovery check
+        run: |
+          # Runs skills.sh's REAL checker — the pinned `skills` CLI (github.com/vercel-labs/skills,
+          # what powers the skills.sh leaderboard) — and asserts every manifest-declared skill is
+          # discovered, catching silent drops (e.g. a YAML-hostile colon in a description).
+          python3 scripts/skills-sh-check.py .
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run claude plugin validate
+        run: claude plugin validate .

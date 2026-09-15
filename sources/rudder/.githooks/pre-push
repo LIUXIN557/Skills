@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# pre-push — run the skills repo reviewer before every push.
+#
+# Enable once per clone:
+#   git config core.hooksPath .githooks
+#
+# Bypass once (emergencies only):
+#   git push --no-verify
+#
+# Configure via env:
+#   SKILLS_REVIEW_STRICT=1        treat warnings as errors
+#   SKILLS_REVIEW_ONLY=E006,W004  run only specific rubric codes
+#   SKILLS_REVIEW_SCRIPT=<path>   override script location
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+SCRIPT="${SKILLS_REVIEW_SCRIPT:-${REPO_ROOT}/scripts/review-skills.py}"
+
+if [[ ! -f "$SCRIPT" ]]; then
+    echo "pre-push: review-skills.py not found at ${SCRIPT} — skipping." >&2
+    exit 0
+fi
+
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "pre-push: python3 not on PATH — skipping skills review." >&2
+    exit 0
+fi
+
+ARGS=()
+[[ "${SKILLS_REVIEW_STRICT:-0}" == "1" ]] && ARGS+=(--strict)
+[[ -n "${SKILLS_REVIEW_ONLY:-}" ]] && ARGS+=(--only "${SKILLS_REVIEW_ONLY}")
+
+echo "pre-push: running skills review…"
+if ! python3 "$SCRIPT" "$REPO_ROOT" ${ARGS[@]+"${ARGS[@]}"}; then
+    cat >&2 <<'EOF'
+
+pre-push: skills review failed.
+  - fix the errors above, or
+  - re-run with  SKILLS_REVIEW_ONLY=<codes>  to narrow scope, or
+  - bypass once with  git push --no-verify  (use sparingly).
+
+EOF
+    exit 1
+fi
+
+# Replay cursor.directory's REAL parser (vendored scripts/cursor-preview/) against the
+# working tree. cursor.directory only ingests the default branch, so a broken layout is
+# otherwise invisible until a live submission on main. Needs Node >= 22.6 for TypeScript
+# support; skipped with a note on older Node (CI runs it authoritatively on Node 24).
+PREVIEW="${REPO_ROOT}/scripts/cursor-preview/preview.mts"
+if [[ -f "$PREVIEW" ]] && command -v node >/dev/null 2>&1; then
+    if node -e 'const [a,b]=process.versions.node.split(".").map(Number);process.exit(a>22||(a===22&&b>=6)?0:1)' 2>/dev/null; then
+        echo "pre-push: previewing cursor.directory discovery…"
+        if ! node --experimental-transform-types "$PREVIEW" "$REPO_ROOT"; then
+            echo "pre-push: cursor.directory would find no components — fix marketplace.json/layout." >&2
+            exit 1
+        fi
+    else
+        echo "pre-push: skipping cursor.directory preview (needs Node >= 22.6; CI runs it)." >&2
+    fi
+fi
+
+# Run skills.sh's REAL checker (pinned `skills` CLI) and assert every manifest-declared
+# skill is discoverable. Needs Node >= 18 and network (npx fetches the pinned package);
+# skipped with a note otherwise (CI runs it authoritatively).
+SKILLS_CHECK="${REPO_ROOT}/scripts/skills-sh-check.py"
+if [[ -f "$SKILLS_CHECK" ]] && command -v node >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1; then
+    if node -e 'process.exit(Number(process.versions.node.split(".")[0])>=18?0:1)' 2>/dev/null; then
+        echo "pre-push: checking skills.sh discovery…"
+        if ! python3 "$SKILLS_CHECK" "$REPO_ROOT"; then
+            echo "pre-push: skills.sh would silently drop skills — see above." >&2
+            exit 1
+        fi
+    else
+        echo "pre-push: skipping skills.sh check (needs Node >= 18; CI runs it)." >&2
+    fi
+fi

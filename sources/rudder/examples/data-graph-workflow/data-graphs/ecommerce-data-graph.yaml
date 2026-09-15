@@ -1,0 +1,76 @@
+# E-Commerce Data Graph Example
+#
+# This Data Graph models a typical e-commerce setup with:
+# - Customers (root entity) - individual buyers
+# - Accounts (related entity) - B2B companies
+# - Orders (event) - purchase transactions
+#
+# Before using:
+# 1. Replace account_id with your warehouse account ID
+# 2. Replace table references with your actual warehouse tables
+#
+# Audiences you can build:
+# - "Customers who ordered in the last 30 days"
+# - "Customers whose Account is Enterprise tier"
+# - "High-value customers by order frequency"
+
+version: "rudder/v1"
+kind: "data-graph"
+metadata:
+  name: "ecommerce-data-graph"
+spec:
+  id: "ecommerce-data-graph"
+  account_id: "<your-warehouse-account-id>"   # Replace with actual account ID
+  models:
+    # ─────────────────────────────────────────────────────────────
+    # ROOT ENTITY: Customers
+    # The primary "who" being activated in marketing campaigns
+    # ─────────────────────────────────────────────────────────────
+    - id: "customers"
+      display_name: "Customers"
+      type: "entity"
+      table: "ECOMMERCE_DB.ANALYTICS.DIM_CUSTOMERS"   # Replace with your table
+      description: "Customer records with profile and loyalty data"
+      primary_id: "CUSTOMER_ID"
+      relationships:
+        # Customer belongs to an Account (B2B relationship)
+        - id: "customer-belongs-to-account"
+          display_name: "Belongs To Account"
+          cardinality: "many-to-one"           # Many customers → one account
+          target: "#data-graph-model:accounts"
+          source_join_key: "ACCOUNT_ID"        # Column on customers table
+          target_join_key: "ACCOUNT_ID"        # Column on accounts table
+
+        # Customer has Orders (purchase history)
+        - id: "customer-has-orders"
+          display_name: "Has Orders"
+          cardinality: "one-to-many"           # One customer → many orders
+          target: "#data-graph-model:orders"
+          source_join_key: "CUSTOMER_ID"
+          target_join_key: "CUSTOMER_ID"
+
+    # ─────────────────────────────────────────────────────────────
+    # RELATED ENTITY: Accounts
+    # B2B companies that customers belong to
+    # ─────────────────────────────────────────────────────────────
+    - id: "accounts"
+      display_name: "Accounts"
+      type: "entity"
+      table: "ECOMMERCE_DB.ANALYTICS.DIM_ACCOUNTS"   # Replace with your table
+      description: "B2B account records with company info and tier"
+      primary_id: "ACCOUNT_ID"
+      # No outbound relationships needed - this is a leaf entity
+      # Customers reference accounts via the "belongs to" relationship above
+
+    # ─────────────────────────────────────────────────────────────
+    # EVENT: Orders
+    # Purchase transactions with timestamps
+    # ─────────────────────────────────────────────────────────────
+    - id: "orders"
+      display_name: "Orders"
+      type: "event"
+      table: "ECOMMERCE_DB.ANALYTICS.FACT_ORDERS"    # Replace with your table
+      description: "Order transactions"
+      timestamp: "ORDERED_AT"                         # Business timestamp column
+      # Events cannot have primary_id
+      # Events cannot have relationships to other events

@@ -1,0 +1,15 @@
+{
+  "type": "track",
+  "event": "Test Decode",
+  "properties": {
+    "testString": "Test decode",
+    "encodedData": "SGVsbG8sIFdvcmxkIQ==",
+    "base64Encoded": "VGVzdCBkZWNvZGU=",
+    "base64UrlEncoded": "VGVzdCBkZWNvZGU",
+    "decodedBack": "Test decode",
+    "isValidBase64": true,
+    "decodedData": "Hello, World!"
+  },
+  "context": {},
+  "anonymousId": "test-user-456"
+}

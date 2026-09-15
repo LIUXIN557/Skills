@@ -1,0 +1,13 @@
+{
+  "type": "track",
+  "event": "Test Base64 Library",
+  "properties": {
+    "testString": "Hello, RudderStack!",
+    "base64Encoded": "SGVsbG8sIFJ1ZGRlclN0YWNrIQ==",
+    "base64UrlEncoded": "SGVsbG8sIFJ1ZGRlclN0YWNrIQ",
+    "decodedBack": "Hello, RudderStack!",
+    "isValidBase64": true
+  },
+  "context": {},
+  "anonymousId": "test-user-123"
+}

@@ -1,0 +1,278 @@
+# Data Graph YAML Template
+
+Full annotated template for Data Graph specs with worked examples and troubleshooting.
+
+## Complete annotated template
+
+```yaml
+version: "rudder/v1"                    # Required. Schema version.
+kind: "data-graph"                       # Required. Resource type.
+metadata:
+  name: "acme-ecommerce-data-graph"      # Required. Human-readable name for the graph.
+spec:
+  id: "acme-ecommerce-data-graph"        # Required. Unique identifier used in syncs.
+  account_id: "2abc123xyz"               # Required. Warehouse account ID. Resolve via `rudder-cli workspace accounts list --category source --json` (the `id` field).
+  models:
+    # ─────────────────────────────────────────────────────────────
+    # ENTITY: Root entity (the "who" being activated)
+    # ─────────────────────────────────────────────────────────────
+    - id: "customers"                    # Unique model identifier (snake_case or kebab-case).
+      display_name: "Customers"          # UI label. Must be unique across ALL models.
+      type: "entity"                     # "entity" = dimension-like table with durable PK.
+      table: "ACME_DB.ECOMMERCE.DIM_CUSTOMERS"  # 3-part: catalog.schema.table
+      description: "Customer records with demographics and loyalty tier"  # Tooltip in Audience Builder.
+      primary_id: "CUSTOMER_KEY"         # Required for entity. Column that uniquely identifies rows.
+      root: true                         # Entity only. Marks an audience-builder anchor. Multiple roots allowed; count is not validated.
+      columns:                           # Optional. Per-column overrides surfaced in the Audience Builder. Sparse — list only what you relabel or flag.
+        - name: "EMAIL_ADDRESS"          # Warehouse column name (must match the table).
+          display_name: "Email"          # Alias shown instead of the raw column name. ≤255 chars, unique within the model.
+          description: "Primary contact email"  # Note shown alongside the column.
+          pii_mask: true                 # Optional. Masks this column's values in the Data Graph preview. Enterprise only.
+        - name: "LOYALTY_TIER"
+          display_name: "Loyalty Tier"   # Alias only — no description.
+        - name: "CUSTOMER_NOTES"
+          description: "Free-form CRM notes"     # Description only — no alias.
+        - name: "SSN"
+          pii_mask: true                 # PII only — no alias or description needed.
+      relationships:
+        # Entity → Event relationship
+        - id: "customer-has-orders"
+          display_name: "Has Orders"     # Must be unique across ALL relationships.
+          cardinality: "one-to-many"     # Entity→Event must be one-to-many.
+          target: "#data-graph-model:orders"  # URN syntax required.
+          source_join_key: "CUSTOMER_KEY"     # Column on THIS model.
+          target_join_key: "CUSTOMER_KEY"     # Column on TARGET model.
+        # Entity → Entity relationship
+        - id: "customer-belongs-to-account"
+          display_name: "Belongs To Account"
+          cardinality: "many-to-one"     # Many customers → one account.
+          target: "#data-graph-model:accounts"
+          source_join_key: "ACCOUNT_KEY"
+          target_join_key: "ACCOUNT_KEY"
+
+    # ─────────────────────────────────────────────────────────────
+    # ENTITY: Related entity (FK target)
+    # ─────────────────────────────────────────────────────────────
+    - id: "accounts"
+      display_name: "Accounts"
+      type: "entity"
+      table: "ACME_DB.ECOMMERCE.DIM_ACCOUNTS"
+      description: "B2B account records"
+      primary_id: "ACCOUNT_KEY"
+      # No relationships needed if this is a leaf node.
+
+    # ─────────────────────────────────────────────────────────────
+    # EVENT: Timestamped activity table
+    # ─────────────────────────────────────────────────────────────
+    - id: "orders"
+      display_name: "Orders"
+      type: "event"                      # "event" = fact-like table with timestamp.
+      table: "ACME_DB.ECOMMERCE.FACT_ORDERS"
+      description: "Order transactions"
+      timestamp: "ORDERED_AT"            # Required for event. True business timestamp.
+      # Events cannot have primary_id.
+      # Events cannot have relationships to other events.
+```
+
+## Field reference
+
+### Top-level fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `version` | String | Yes | Schema version: `"rudder/v1"` |
+| `kind` | String | Yes | Resource type: `"data-graph"` |
+| `metadata.name` | String | Yes | Human-readable name |
+| `spec.id` | String | Yes | Unique identifier for syncs |
+| `spec.account_id` | String | Yes | Warehouse account ID — `rudder-cli workspace accounts list --category source --json` (`id` field) |
+| `spec.models` | List | Yes | Entity and event models |
+
+### Model fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | String | Yes | Unique model identifier |
+| `display_name` | String | Yes | UI label (must be unique across all models) |
+| `type` | String | Yes | `"entity"` or `"event"` |
+| `table` | String | Yes | Fully qualified: `catalog.schema.table` |
+| `description` | String | No | Tooltip in Audience Builder |
+| `primary_id` | String | Entity only | Column that uniquely identifies rows |
+| `root` | Bool | Entity only, optional | Marks an audience-builder anchor. Multiple roots allowed; the count is not validated (zero, one, or many all pass) |
+| `timestamp` | String | Event only | Event timestamp column |
+| `relationships` | List | No | Relationships to other models |
+| `columns` | List | No | Per-column metadata overrides (aliases, descriptions, PII masking) surfaced in the Audience Builder. See [Column metadata fields](#column-metadata-fields) |
+
+### Relationship fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | String | Yes | Unique relationship identifier |
+| `display_name` | String | Yes | UI label (must be unique) |
+| `cardinality` | String | Yes | `"one-to-one"`, `"one-to-many"`, or `"many-to-one"` |
+| `target` | String | Yes | Target model: `#data-graph-model:<model-id>` |
+| `source_join_key` | String | Yes | Column on source model for join |
+| `target_join_key` | String | Yes | Column on target model for join |
+
+### Column metadata fields
+
+Optional per-column overrides under a model's `columns:` block. **Sparse** — list only the columns you want to relabel or flag; unlisted columns keep their raw warehouse names. By default the Audience Builder shows raw warehouse column names; aliases and descriptions make them readable for marketers building audiences and expressions, and `pii_mask` flags sensitive columns so their values are masked in the Data Graph preview.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | String | Yes | Warehouse column name (must match the model's `table`) |
+| `display_name` | String | Conditional | Alias shown in the Audience Builder instead of the raw column name. ≤255 chars, case-insensitive-unique within the model |
+| `description` | String | Conditional | Note shown alongside the column. ≤255 chars; no uniqueness constraint |
+| `pii_mask` | Bool | No | When `true`, masks the column's values (`***`) in the Data Graph preview. Defaults to `false`. **Enterprise only** — the server rejects `pii_mask: true` on other plans |
+
+Each `columns` entry must set **at least one** of `display_name`, `description`, or `pii_mask` (an entry with only `name` is invalid). `apply` is declarative — drop a column's entry to clear its metadata. In the preview, masked values show as `***`; users with the **PII rETL Data Access** permission (or enterprise admins) can reveal the clear text.
+
+## Validation rules
+
+- `table` must be a **3-part reference** (`catalog.schema.table`)
+- Entity models require `primary_id` and must not set `timestamp`
+- Event models require `timestamp` and must not set `primary_id`
+- **Event↔event relationships are forbidden**
+- Event→entity cardinality must be `many-to-one`
+- Entity→event cardinality must be `one-to-many`
+- Entity↔entity can be any cardinality
+- `target` must use URN syntax `#data-graph-model:<model-id>` and resolve to a model in the same spec
+- `display_name` must be unique **among models** and, separately, **among relationships** — the two are independent namespaces, so a model and a relationship may share a name, but two models (or two relationships) may not
+- Declare each relationship **once, on a single model** — do not also declare its inverse on the target model; the graph traverses it both ways. Double-declaration collides on the relationship `display_name` and inflates the relationship count
+- `root: true` is an optional entity-only flag; multiple roots are allowed and the count is not validated
+- `columns` is optional and **sparse** — list only the columns you want to relabel or flag; unlisted columns keep their raw warehouse names
+- each `columns[]` entry needs `name` plus at least one of `display_name` / `description` / `pii_mask` (an entry with only `name` is invalid)
+- `columns[].display_name` is **case-insensitive-unique within a model** — a separate namespace from model and relationship `display_name` uniqueness; `description` has no uniqueness constraint
+- `columns[].pii_mask` is an optional boolean (default `false`); marking a column `pii_mask: true` is **enterprise-only** and the server rejects it on other plans
+
+## Worked example: Property vertical
+
+A property management company with branches, contacts, and lead events.
+
+```yaml
+version: "rudder/v1"
+kind: "data-graph"
+metadata:
+  name: "propco-data-graph"
+spec:
+  id: "propco-data-graph"
+  account_id: "2wh9abc123"
+  models:
+    # Root entity: Branches (the business units)
+    - id: "branches"
+      display_name: "Branches"
+      type: "entity"
+      table: "PROPCO_DW.ANALYTICS.DIM_BRANCH"
+      description: "Property management branches"
+      primary_id: "BRANCH_ID"
+      root: true
+      relationships:
+        - id: "branch-has-contacts"
+          display_name: "Has Contacts"
+          cardinality: "one-to-many"
+          target: "#data-graph-model:contacts"
+          source_join_key: "BRANCH_ID"
+          target_join_key: "BRANCH_ID"
+        - id: "branch-has-leads"
+          display_name: "Has Leads Sent"
+          cardinality: "one-to-many"
+          target: "#data-graph-model:leads-sent"
+          source_join_key: "BRANCH_ID"
+          target_join_key: "BRANCH_ID"
+
+    # Related entity: Contacts
+    - id: "contacts"
+      display_name: "Contacts"
+      type: "entity"
+      table: "PROPCO_DW.ANALYTICS.DIM_CONTACT"
+      description: "Landlords and tenants"
+      primary_id: "CONTACT_ID"
+      relationships:
+        - id: "contact-belongs-to-branch"
+          display_name: "Belongs To Branch"
+          cardinality: "many-to-one"
+          target: "#data-graph-model:branches"
+          source_join_key: "BRANCH_ID"
+          target_join_key: "BRANCH_ID"
+        - id: "contact-has-leads"
+          display_name: "Has Leads Sent"
+          cardinality: "one-to-many"
+          target: "#data-graph-model:leads-sent"
+          source_join_key: "CONTACT_ID"
+          target_join_key: "CONTACT_ID"
+
+    # Event: Leads sent
+    - id: "leads-sent"
+      display_name: "Leads Sent"
+      type: "event"
+      table: "PROPCO_DW.ANALYTICS.FACT_LEAD_SENT"
+      description: "Lead submission events"
+      timestamp: "SENT_AT"
+```
+
+**Audiences this graph enables:**
+
+1. "Branches with no leads in the last 30 days" — Branch entity + Leads Sent event + time window
+2. "Contacts who received a lead but didn't convert" — Contact + Leads Sent + conversion flag
+3. "Top-performing branches by lead volume" — Branch + aggregated Leads Sent count
+
+## Troubleshooting
+
+### "primary_id required for entity type"
+
+You set `type: "entity"` but forgot `primary_id`. Add the column that uniquely identifies rows.
+
+### "timestamp required for event type"
+
+You set `type: "event"` but forgot `timestamp`. Add the business-time column (not `loaded_at` or `snapshot_date`).
+
+### "Event to event relationships are not allowed"
+
+You tried to create a relationship between two event models. This is forbidden. Events must relate to entities, not to other events.
+
+### "Invalid cardinality for entity to event relationship"
+
+Entity→Event must be `one-to-many`. Event→Entity must be `many-to-one`. Check the direction.
+
+### "Model reference not found"
+
+The `target` URN doesn't match any `id` in the same spec. Check for typos. Remember: `#data-graph-model:orders` must match a model with `id: "orders"`.
+
+### "Duplicate display_name"
+
+Two models share a `display_name`, or two relationships share one. Names must be unique **within each type** — model names among models, relationship names among relationships. (A model and a relationship may share a name; the namespaces are separate.)
+
+A common trigger is two relationships that naturally share a label — e.g. `sale-via-channel` and `interaction-via-channel` both wanting "Via Channel". Prefix with the source entity to disambiguate: "Sale Via Channel" and "Interaction Via Channel". The same fix applies to any pair of symmetric relationships pointing at the same target entity.
+
+### "Invalid table reference"
+
+The `table` must be 3-part: `catalog.schema.table`. Common mistake: using 2-part `schema.table`.
+
+### Validation passes but audiences return wrong data
+
+Most likely cause: wrong join keys. The YAML is syntactically valid but semantically wrong. Verify join keys match actual FK relationships in the warehouse.
+
+### `apply` fails on a missing / invalid `account_id`
+
+The account only needs to *exist* — you do **not** need to select it in the Data Graph UI, and you do **not** need a RETL source. List the warehouse accounts and copy the `id`:
+
+```bash
+rudder-cli workspace accounts list --category source --json
+```
+
+`rudder-mcp` cannot see accounts created through the DG UI or a standalone warehouse connection (it only surfaces accounts behind a RETL source or destination), so the CLI list is the authoritative lookup.
+
+## CLI commands
+
+```bash
+# List warehouse accounts; the `id` field is the spec.account_id value
+rudder-cli workspace accounts list --category source --json
+
+# Validate all data-graph specs in current directory
+rudder-cli validate -l ./
+
+# Dry run to preview changes
+rudder-cli apply --dry-run -l ./
+
+# Apply to workspace
+rudder-cli apply -l ./
+```

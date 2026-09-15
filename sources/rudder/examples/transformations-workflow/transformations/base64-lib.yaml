@@ -1,0 +1,11 @@
+version: "rudder/v1"
+kind: "transformation-library"
+metadata:
+  name: "transformation-libraries"
+spec:
+  id: "base64-lib"
+  name: "Base64 Library"
+  description: "Base64 encoding/decoding library ported from js-base64. Supports UTF-8 strings and URL-safe encoding."
+  language: "javascript"
+  import_name: "base64Library"
+  file: "javascript/base64-lib.js"

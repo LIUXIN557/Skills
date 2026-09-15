@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Claude Code local settings
+# The root .claude/ is for local development, not for distribution
+# Skills are published from the top-level skills/ directory
+.claude/
+
+# Example settings are in .claude/settings.example.json (tracked)
+# User-specific settings should not be committed
+examples/**/.claude/settings.local.json
+
+# Build artifacts
+dist/
+build/
+*.out
+
+# Test artifacts
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Internal planning docs (not published)
+docs/superpowers/
+
+# Internal examples (RudderStack-specific, not for public distribution)
+**/references/internal-*

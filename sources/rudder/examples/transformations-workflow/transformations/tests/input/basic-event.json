@@ -1,0 +1,9 @@
+{
+  "type": "track",
+  "event": "Test Base64 Library",
+  "properties": {
+    "testString": "Hello, RudderStack!"
+  },
+  "context": {},
+  "anonymousId": "test-user-123"
+}

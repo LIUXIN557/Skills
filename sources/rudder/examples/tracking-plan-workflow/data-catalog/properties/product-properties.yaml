@@ -1,0 +1,118 @@
+# Product Properties
+#
+# Properties related to products in the catalog.
+# Referenced by ProductType custom type and e-commerce events.
+
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "product_id"
+  type: "string"
+  description: "Unique product identifier"
+  config:
+    minLength: 3
+    maxLength: 50
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "product_sku"
+  type: "string"
+  description: "Product SKU for inventory tracking"
+  config:
+    minLength: 3
+    maxLength: 50
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "product_name"
+  type: "string"
+  description: "Human-readable product name"
+  config:
+    maxLength: 200
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "product_price"
+  type: "number"
+  description: "Product price in default currency"
+  config:
+    minimum: 0
+    exclusiveMinimum: true
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "product_msrp"
+  type: "number"
+  description: "Manufacturer's suggested retail price"
+  config:
+    minimum: 0
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "product_category"
+  type: "string"
+  description: "Product category for classification"
+  config:
+    enum:
+      - "Footwear"
+      - "Clothing"
+      - "Accessories"
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "quantity"
+  type: "integer"
+  description: "Number of items"
+  config:
+    minimum: 1
+    maximum: 100
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "cart_total"
+  type: "number"
+  description: "Current cart total value"
+  config:
+    minimum: 0
+
+---
+version: "rudder/v1"
+kind: "property"
+metadata:
+  name: "properties"
+spec:
+  name: "product_count"
+  type: "integer"
+  description: "Number of distinct products in cart"
+  config:
+    minimum: 0

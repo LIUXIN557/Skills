@@ -1,0 +1,37 @@
+# Mobile App Tracking Plan
+#
+# Tracking plan for iOS and Android apps.
+# Requires device_id and session_id for mobile attribution.
+# Governance is strict (block violations) for production safety.
+
+version: "rudder/v1"
+kind: "tracking-plan"
+metadata:
+  name: "tracking-plans"
+spec:
+  name: "Mobile App Tracking Plan"
+  description: "E-commerce events for mobile apps with device attribution"
+  governance:
+    unplannedEvents: block      # Reject events not in plan
+    violatingEvents: block      # Reject events that violate schema
+  events:
+    - event: "urn:rudder:event/product-viewed"
+      rules:
+        # Override: require device_id for mobile attribution
+        - property: "urn:rudder:property/device_id"
+          required: true
+        # Override: require session_id for session tracking
+        - property: "urn:rudder:property/session_id"
+          required: true
+    - event: "urn:rudder:event/product-added-to-cart"
+      rules:
+        - property: "urn:rudder:property/device_id"
+          required: true
+        - property: "urn:rudder:property/session_id"
+          required: true
+    - event: "urn:rudder:event/order-completed"
+      rules:
+        - property: "urn:rudder:property/device_id"
+          required: true
+        - property: "urn:rudder:property/session_id"
+          required: true

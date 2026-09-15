@@ -1,0 +1,90 @@
+# Property Management Data Graph Example
+#
+# This Data Graph models a property management company with:
+# - Branches (root entity) - office locations
+# - Contacts (related entity) - landlords and tenants
+# - Leads Sent (event) - lead submission events
+#
+# Before using:
+# 1. Replace account_id with your warehouse account ID
+# 2. Replace table references with your actual warehouse tables
+#
+# Audiences you can build:
+# - "Branches with no leads in the last 30 days"
+# - "Contacts who received a lead but didn't convert"
+# - "Top-performing branches by lead volume"
+
+version: "rudder/v1"
+kind: "data-graph"
+metadata:
+  name: "property-data-graph"
+spec:
+  id: "property-data-graph"
+  account_id: "<your-warehouse-account-id>"   # Replace with actual account ID
+  models:
+    # ─────────────────────────────────────────────────────────────
+    # ROOT ENTITY: Branches
+    # Office locations - the business units being measured
+    # ─────────────────────────────────────────────────────────────
+    - id: "branches"
+      display_name: "Branches"
+      type: "entity"
+      table: "PROPCO_DW.ANALYTICS.DIM_BRANCH"        # Replace with your table
+      description: "Property management branch offices"
+      primary_id: "BRANCH_ID"
+      relationships:
+        # Branch has Contacts (manages landlords/tenants)
+        - id: "branch-has-contacts"
+          display_name: "Has Contacts"
+          cardinality: "one-to-many"           # One branch → many contacts
+          target: "#data-graph-model:contacts"
+          source_join_key: "BRANCH_ID"
+          target_join_key: "BRANCH_ID"
+
+        # Branch receives Leads
+        - id: "branch-has-leads"
+          display_name: "Has Leads Sent"
+          cardinality: "one-to-many"           # One branch → many leads
+          target: "#data-graph-model:leads-sent"
+          source_join_key: "BRANCH_ID"
+          target_join_key: "BRANCH_ID"
+
+    # ─────────────────────────────────────────────────────────────
+    # RELATED ENTITY: Contacts
+    # Landlords and tenants managed by branches
+    # ─────────────────────────────────────────────────────────────
+    - id: "contacts"
+      display_name: "Contacts"
+      type: "entity"
+      table: "PROPCO_DW.ANALYTICS.DIM_CONTACT"       # Replace with your table
+      description: "Landlords and tenants"
+      primary_id: "CONTACT_ID"
+      relationships:
+        # Contact belongs to a Branch
+        - id: "contact-belongs-to-branch"
+          display_name: "Belongs To Branch"
+          cardinality: "many-to-one"           # Many contacts → one branch
+          target: "#data-graph-model:branches"
+          source_join_key: "BRANCH_ID"
+          target_join_key: "BRANCH_ID"
+
+        # Contact has Leads (lead history)
+        - id: "contact-has-leads"
+          display_name: "Has Leads Sent"
+          cardinality: "one-to-many"           # One contact → many leads
+          target: "#data-graph-model:leads-sent"
+          source_join_key: "CONTACT_ID"
+          target_join_key: "CONTACT_ID"
+
+    # ─────────────────────────────────────────────────────────────
+    # EVENT: Leads Sent
+    # Lead submission events with timestamps
+    # ─────────────────────────────────────────────────────────────
+    - id: "leads-sent"
+      display_name: "Leads Sent"
+      type: "event"
+      table: "PROPCO_DW.ANALYTICS.FACT_LEAD_SENT"    # Replace with your table
+      description: "Lead submission events"
+      timestamp: "SENT_AT"                            # Business timestamp column
+      # Events cannot have primary_id
+      # Events cannot have relationships to other events

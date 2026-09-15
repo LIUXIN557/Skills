@@ -1,0 +1,14 @@
+version: "rudder/v1"
+kind: "transformation"
+metadata:
+  name: "transformations"
+spec:
+  description: "Test transformation demonstrating base64 library usage"
+  file: "javascript/test-transformation.js"
+  id: "test-transformation"
+  language: "javascript"
+  name: "Test transformation"
+  tests:
+    - name: "base64-tests"
+      input: "./tests/input"
+      output: "./tests/output"
