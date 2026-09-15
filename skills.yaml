@@ -44,8 +44,8 @@ sources:
   url: https://github.com/blader/humanizer.git
   updateRef: 9862685f575c65a8247f90369951df1b3416e3d6
 - id: doubao-product-qa
-  url: ./sources/doubao-product-qa
-  updateRef: 4b9020d
+  url: https://github.com/LIUXIN557/doubao-skills.git
+  updateRef: 4b9020d16444becf89f8f1fa4fe95bc1eb549f8f
 skills:
 - id: brainstorming
   source: superpowers
