@@ -43,6 +43,9 @@ sources:
 - id: humanizer
   url: https://github.com/blader/humanizer.git
   updateRef: 9862685f575c65a8247f90369951df1b3416e3d6
+- id: doubao-product-qa
+  url: ./sources/doubao-product-qa
+  updateRef: 4b9020d
 skills:
 - id: brainstorming
   source: superpowers
@@ -302,6 +305,10 @@ skills:
   enabled: true
 - id: humanizer
   source: humanizer
+  pathInSource: .
+  enabled: true
+- id: doubao-product-qa
+  source: doubao-product-qa
   pathInSource: .
   enabled: true
 patches:
