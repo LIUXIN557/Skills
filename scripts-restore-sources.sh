@@ -31,7 +31,10 @@ for id in "${ids[@]}"; do
   echo "== 恢复 $id =="
   rm -rf "$target"
   git clone -q "$bundle" "$target"
+  git -C "$target" remote remove origin 2>/dev/null || true
   git -C "$target" remote add origin "${REMOTES[$id]}"
+  git -C "$target" config user.name "LIUXIN557"
+  git -C "$target" config user.email "liuxin557@users.noreply.github.com"
   echo "   $id 已恢复（remote=origin -> ${REMOTES[$id]}）"
 done
 echo "完成。可选：./skill update <id> 对齐清单版本并重放补丁"
